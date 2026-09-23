@@ -2,1085 +2,533 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EduPulse ALS - Virtual Classroom & Management System</title>
-    
-    <!-- Tailwind CSS for UI Layouts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPulse ALS Virtual Learning Center</title>
+    <!-- Tailwind CSS (CDN for rapid styling; cached locally once loaded) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- FontAwesome & Phosphor Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts for Accessibility & Dyslexia support -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Inter:wght@300;400;600;700;800&family=Lora:ital,wght@0,500;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        deped: {
-                            blue: '#0038A8',
-                            red: '#CE1126',
-                            yellow: '#FCD116',
-                            darkBlue: '#001F60',
-                            gold: '#D4AF37'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Lora', 'serif'],
-                        dyslexic: ['Comic Neue', 'cursive'],
-                        mono: ['Space Mono', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
-
+    <!-- QR Code Generator & Offline Camera Scanner -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* Custom UI Tweaks & Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0,56,168,0.3);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0,56,168,0.6);
-        }
-        .bg-pattern {
-            background-image: radial-gradient(rgba(0, 56, 168, 0.1) 1px, transparent 0);
-            background-size: 20px 20px;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .dark .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .touch-target {
-            min-height: 44px;
-            min-width: 44px;
-        }
-        /* Anti-Cheating Watermark Overlay */
-        .proctor-overlay {
-            background-image: repeating-linear-gradient(-45deg, rgba(206,17,38,0.03), rgba(206,17,38,0.03) 15px, transparent 15px, transparent 30px);
-        }
+        .dark-mode { background-color: #000000 !important; color: #e5e7eb !important; }
+        .dark-card { background-color: #121212 !important; border-color: #27272a !important; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-deped-yellow selection:text-deped-darkBlue">
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans transition-colors duration-200">
 
-    <!-- TOP BRANDING & HEADER BAR -->
-    <header class="bg-deped-darkBlue text-white shadow-md sticky top-0 z-40 transition-all duration-300">
-        <!-- 5-SLOT MULTI-LOGO HEADER ENGINE -->
-        <div class="max-w-7xl mx-mx-auto px-2 sm:px-4 py-2 flex items-center justify-between flex-wrap gap-2">
-            
-            <div class="flex items-center space-x-2 sm:space-x-3 overflow-x-auto py-1">
-                <!-- Slot 1: Central DepEd Logo -->
-                <img id="logo-slot-1" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Department_of_Education_%28DepEd%29.svg" alt="DepEd Logo" class="h-9 sm:h-11 w-auto object-contain bg-white rounded-full p-0.5" onerror="this.src='https://placehold.co/100x100/0038A8/ffffff?text=DepEd'">
-                
-                <!-- Slot 2: Regional Office Logo -->
-                <img id="logo-slot-2" src="https://placehold.co/100x100/0038A8/ffffff?text=Region" alt="Region Logo" class="h-8 sm:h-10 w-auto object-contain rounded-full bg-white/10 p-0.5">
-                
-                <!-- Slot 3: Division/SDO Logo -->
-                <img id="logo-slot-3" src="https://placehold.co/100x100/CE1126/ffffff?text=SDO" alt="Division Logo" class="h-8 sm:h-10 w-auto object-contain rounded-full bg-white/10 p-0.5">
-                
-                <!-- Slot 4: ALS Program Logo -->
-                <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-deped-yellow text-deped-darkBlue font-black flex items-center justify-center text-xs sm:text-sm shadow">
-                    ALS
-                </div>
-
-                <!-- Slot 5: School / CLC Logo -->
-                <img id="logo-slot-5" src="https://placehold.co/100x100/D4AF37/001F60?text=CLC" alt="CLC Logo" class="h-8 sm:h-10 w-auto object-contain rounded-full bg-white/10 p-0.5">
-
-                <!-- School / CLC Text Branding -->
-                <div class="ml-1 sm:ml-2">
-                    <h1 id="header-school-name" class="font-extrabold text-xs sm:text-base tracking-wide leading-tight uppercase text-yellow-300">
-                        SAN ROQUE COMMUNITY LEARNING CENTER
-                    </h1>
-                    <p id="header-subtitle" class="text-[10px] sm:text-xs text-blue-200 font-medium">
-                        Alternative Learning System (ALS) Mobile Virtual Classroom
-                    </p>
+    <!-- Top Navigation Bar -->
+    <header class="bg-blue-900 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <span id="clcLogoIcon" class="text-2xl">🏫</span>
+                <div>
+                    <h1 id="clcNameDisplay" class="font-bold text-lg uppercase tracking-wide">Masantol Elementary School Learning Center</h1>
+                    <p class="text-xs text-blue-200">DepEd ALS Offline-First Virtual Classroom</p>
                 </div>
             </div>
-
-            <!-- Global Action Bar -->
-            <div class="flex items-center space-x-2 ml-auto">
-                <span id="sync-status" class="hidden sm:inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-green-500/20 text-green-300 border border-green-400/30">
-                    <i class="fa-solid fa-wifi mr-1"></i> ONLINE SYNC
-                </span>
-
-                <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="hidden bg-deped-yellow hover:bg-yellow-400 text-deped-darkBlue font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center animate-pulse">
-                    <i class="fa-solid fa-download mr-1.5"></i> Install App
-                </button>
-
-                <button onclick="toggleTeacherStudioModal()" class="bg-blue-800 hover:bg-blue-700 text-white p-2 rounded-lg text-xs font-semibold flex items-center space-x-1 border border-blue-600 shadow" title="Teacher Customization Studio">
-                    <i class="fa-solid fa-sliders text-sm"></i>
-                    <span class="hidden md:inline">Teacher Studio</span>
-                </button>
+            
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleDarkMode()" class="px-3 py-1.5 text-xs bg-blue-800 hover:bg-blue-700 rounded transition border border-blue-600">🌙 OLED Mode</button>
+                <button id="roleToggleButton" onclick="toggleRole()" class="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 rounded transition shadow">👨‍🏫 Teacher Studio</button>
             </div>
         </div>
-
+        
         <!-- Navigation Tabs -->
-        <nav class="bg-deped-blue border-t border-blue-900/50 px-2 sm:px-4">
-            <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-2 overflow-x-auto text-xs sm:text-sm font-semibold">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-tab text-white bg-blue-900/80 px-3 sm:px-4 py-2.5 rounded-t-lg border-b-2 border-deped-yellow flex items-center space-x-2 whitespace-nowrap">
-                    <i class="fa-solid fa-chalkboard-user"></i> <span>Dashboard</span>
-                </button>
-                <button onclick="switchTab('enrollment')" id="nav-enrollment" class="nav-tab text-blue-200 hover:text-white hover:bg-blue-800/50 px-3 sm:px-4 py-2.5 rounded-t-lg flex items-center space-x-2 whitespace-nowrap">
-                    <i class="fa-solid fa-address-card"></i> <span>Learner Enrollment</span>
-                </button>
-                <button onclick="switchTab('modules')" id="nav-modules" class="nav-tab text-blue-200 hover:text-white hover:bg-blue-800/50 px-3 sm:px-4 py-2.5 rounded-t-lg flex items-center space-x-2 whitespace-nowrap">
-                    <i class="fa-solid fa-book-open"></i> <span>Modules & Media</span>
-                </button>
-                <button onclick="switchTab('exams')" id="nav-exams" class="nav-tab text-blue-200 hover:text-white hover:bg-blue-800/50 px-3 sm:px-4 py-2.5 rounded-t-lg flex items-center space-x-2 whitespace-nowrap">
-                    <i class="fa-solid fa-file-pen text-yellow-300"></i> <span class="text-yellow-200">Term Exams & FLT</span>
-                </button>
-                <button onclick="switchTab('forms')" id="nav-forms" class="nav-tab text-blue-200 hover:text-white hover:bg-blue-800/50 px-3 sm:px-4 py-2.5 rounded-t-lg flex items-center space-x-2 whitespace-nowrap">
-                    <i class="fa-solid fa-file-invoice"></i> <span>DepEd Forms (AF1-5)</span>
-                </button>
-            </div>
+        <nav class="bg-blue-950 px-4 py-2 flex space-x-4 text-sm font-medium overflow-x-auto border-t border-blue-800/50">
+            <button onclick="switchTab('dashboardTab')" class="nav-btn text-white hover:text-blue-300 pb-0.5">Dashboard</button>
+            <button onclick="switchTab('modulesTab')" class="nav-btn text-blue-200 hover:text-white pb-0.5">Modules & Worksheets</button>
+            <button onclick="switchTab('formsTab')" class="nav-btn text-blue-200 hover:text-white pb-0.5">DepEd Forms & FLT</button>
+            <button onclick="switchTab('enrollmentTab')" class="teacher-only nav-btn text-blue-200 hover:text-white pb-0.5">Learner Enrollment</button>
+            <button onclick="switchTab('settingsTab')" class="teacher-only nav-btn text-blue-200 hover:text-white pb-0.5">Customization</button>
         </nav>
     </header>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 md:p-6 bg-pattern">
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
 
-        <!-- ================= PAGE 1: DASHBOARD ================= -->
-        <section id="tab-dashboard" class="tab-content space-y-6">
-            <!-- Alert Banner -->
-            <div class="bg-gradient-to-r from-blue-900 to-deped-blue rounded-2xl p-4 sm:p-6 text-white shadow-xl relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 opacity-10 text-white">
-                    <i class="fa-solid fa-graduation-cap text-[180px]"></i>
-                </div>
-                <div class="relative z-10 max-w-2xl">
-                    <span class="bg-yellow-400 text-deped-darkBlue font-extrabold text-[10px] sm:text-xs px-2.5 py-1 rounded-full uppercase tracking-wider">
-                        DepEd ALS Mobile Classroom PWA
-                    </span>
-                    <h2 class="text-xl sm:text-3xl font-extrabold mt-2">Welcome to EduPulse Virtual Learning</h2>
-                    <p class="text-blue-100 text-xs sm:text-sm mt-1">
-                        Fully functional offline learning portal equipped with DepEd Form automation, term examination locking, and digital worksheet annotator.
-                    </p>
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        <button onclick="switchTab('enrollment')" class="bg-deped-yellow text-deped-darkBlue font-bold px-4 py-2 rounded-xl text-xs sm:text-sm shadow hover:bg-yellow-300 transition flex items-center">
-                            <i class="fa-solid fa-user-plus mr-2"></i> Enroll New Learner
-                        </button>
-                        <button onclick="switchTab('exams')" class="bg-white/20 hover:bg-white/30 text-white font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm backdrop-blur transition flex items-center">
-                            <i class="fa-solid fa-clock-rotate-left mr-2"></i> Take Scheduled Exam
-                        </button>
-                    </div>
+        <!-- Active Session Status Bar -->
+        <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-6 flex flex-wrap justify-between items-center text-sm dark-card">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-600 dark:text-slate-300">Active Learner Session:</span>
+                <select id="activeLearnerSelect" onchange="setActiveLearner(this.value)" class="bg-slate-100 border border-slate-300 rounded px-2 py-1 font-semibold text-blue-900 dark:bg-zinc-800 dark:text-white">
+                    <option value="">-- No Learner Selected --</option>
+                </select>
+            </div>
+            <div id="activeLearnerDetails" class="text-xs text-slate-500 font-mono mt-1 sm:mt-0">Select or enroll a learner to auto-fill records.</div>
+        </div>
+
+        <!-- 1. DASHBOARD TAB -->
+        <section id="dashboardTab" class="tab-content">
+            <div class="bg-gradient-to-r from-blue-900 to-indigo-800 rounded-xl p-6 text-white shadow-md mb-6">
+                <h2 class="text-2xl font-bold mb-2">Welcome to EduPulse ALS Virtual Learning</h2>
+                <p class="text-blue-100 text-sm max-w-2xl mb-4">Offline-first portal built for DepEd ALS in flood-prone areas. Single-entry learner registration auto-fills all official records.</p>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="switchTab('enrollmentTab')" class="teacher-only px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-xs rounded shadow">➕ Enroll New Learner</button>
+                    <button onclick="exportLearnersToCSV()" class="teacher-only px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs rounded shadow">📊 Export Scores (Excel CSV)</button>
                 </div>
             </div>
 
-            <!-- Quick Metrics Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-deped-blue flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Enrolled Learners</p>
-                        <h3 id="stat-enrolled" class="text-xl font-extrabold">28</h3>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 dark-card">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Enrolled Learners</div>
+                    <div id="statLearners" class="text-3xl font-black text-blue-900 mt-1 dark:text-blue-400">0</div>
                 </div>
-                <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-xl bg-green-100 text-green-700 flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-book-bookmark"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Active Modules</p>
-                        <h3 id="stat-modules" class="text-xl font-extrabold">14</h3>
-                    </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 dark-card">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Uploaded Modules</div>
+                    <div id="statModules" class="text-3xl font-black text-emerald-600 mt-1">0</div>
                 </div>
-                <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-800 flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-file-circle-check"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Term Exams Ready</p>
-                        <h3 id="stat-exams" class="text-xl font-extrabold">3</h3>
-                    </div>
-                </div>
-                <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-xl bg-red-100 text-deped-red flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-certificate"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">FLT Diagnostic</p>
-                        <h3 id="stat-flt" class="text-xl font-extrabold">Completed</h3>
-                    </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 dark-card">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Active Session FLT</div>
+                    <div id="statFLT" class="text-3xl font-black text-amber-500 mt-1">Pending</div>
                 </div>
             </div>
 
-            <!-- Learning Strands Quick Access -->
-            <div class="space-y-3">
-                <h3 class="text-base font-bold text-slate-700 dark:text-slate-300 flex items-center">
-                    <i class="fa-solid fa-layer-group text-deped-blue mr-2"></i> DepEd ALS Learning Strands (LS 1 - LS 6)
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border-l-4 border-blue-600 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-bold text-blue-600 uppercase">LS 1</span>
-                            <h4 class="font-bold text-sm">Communication Skills</h4>
-                            <p class="text-xs text-slate-500">English & Filipino Literacy</p>
+            <!-- Zero-Data QR Code Sync Hub -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 dark-card">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 dark:text-white">📱 Zero-Data Offline QR Sync</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Student QR Generator -->
+                    <div class="p-4 bg-slate-50 border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                        <h4 class="text-xs font-bold mb-2">👨‍🎓 Learner: Generate Progress QR</h4>
+                        <button onclick="generateLearnerQR()" class="px-3 py-2 bg-blue-900 text-white text-xs font-bold rounded hover:bg-blue-800 w-full mb-3">Generate On-Screen QR Code</button>
+                        <div id="qrcodeDisplay" class="flex justify-center p-2 bg-white rounded border min-h-[160px] items-center">
+                            <span class="text-xs text-slate-400">QR code renders here</span>
                         </div>
-                        <i class="fa-solid fa-comments text-2xl text-slate-300"></i>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-bold text-yellow-600 uppercase">LS 2</span>
-                            <h4 class="font-bold text-sm">Scientific & Critical Thinking</h4>
-                            <p class="text-xs text-slate-500">Environmental & Natural Science</p>
-                        </div>
-                        <i class="fa-solid fa-flask text-2xl text-slate-300"></i>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border-l-4 border-green-600 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-bold text-green-600 uppercase">LS 3</span>
-                            <h4 class="font-bold text-sm">Mathematical & Problem Solving</h4>
-                            <p class="text-xs text-slate-500">Numeracy & Financial Literacy</p>
-                        </div>
-                        <i class="fa-solid fa-calculator text-2xl text-slate-300"></i>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border-l-4 border-purple-600 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-bold text-purple-600 uppercase">LS 4</span>
-                            <h4 class="font-bold text-sm">Life & Career Skills</h4>
-                            <p class="text-xs text-slate-500">Employment & Entrepreneurship</p>
-                        </div>
-                        <i class="fa-solid fa-briefcase text-2xl text-slate-300"></i>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border-l-4 border-red-600 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-bold text-red-600 uppercase">LS 5</span>
-                            <h4 class="font-bold text-sm">Understanding Self & Society</h4>
-                            <p class="text-xs text-slate-500">Civics & Culture</p>
-                        </div>
-                        <i class="fa-solid fa-users-line text-2xl text-slate-300"></i>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border-l-4 border-teal-600 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-bold text-teal-600 uppercase">LS 6</span>
-                            <h4 class="font-bold text-sm">Digital Citizenship</h4>
-                            <p class="text-xs text-slate-500">ICT & Digital Literacy</p>
-                        </div>
-                        <i class="fa-solid fa-laptop-code text-2xl text-slate-300"></i>
+
+                    <!-- Teacher QR Scanner -->
+                    <div class="teacher-only p-4 bg-slate-50 border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                        <h4 class="text-xs font-bold mb-2">👨‍🏫 Teacher: Scan Student QR Code</h4>
+                        <button onclick="startQRScanner()" class="px-3 py-2 bg-emerald-700 text-white text-xs font-bold rounded hover:bg-emerald-600 w-full mb-3">📷 Start Camera Scanner</button>
+                        <div id="qrReader" class="w-full min-h-[160px] bg-black rounded overflow-hidden"></div>
+                        <div id="scanResult" class="text-xs font-mono mt-2 text-emerald-600 font-bold"></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= PAGE 2: LEARNER ENROLLMENT ================= -->
-        <section id="tab-enrollment" class="tab-content hidden space-y-6">
-            <div class="glass-panel p-4 sm:p-6 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800">
-                <div class="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-700">
+        <!-- 2. LEARNER ENROLLMENT TAB -->
+        <section id="enrollmentTab" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 dark-card max-w-3xl mx-auto">
+                <h3 class="text-lg font-bold text-slate-800 mb-1 border-b pb-2 dark:text-white">Master Learner Profile Registration</h3>
+                <p class="text-xs text-slate-500 mb-4">Single registration auto-populates AF-1 to AF-5, RPL Forms 1–4, and Functional Literacy Tests.</p>
+                
+                <form id="enrollmentForm" onsubmit="saveLearnerProfile(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                        <h3 class="text-lg font-extrabold text-deped-darkBlue dark:text-blue-400">
-                            <i class="fa-solid fa-user-plus mr-2"></i> Official Learner Enrollment & ID Studio
-                        </h3>
-                        <p class="text-xs text-slate-500">Register learner details, auto-fill via DepEd OCR, capture formal ID photo, and record First Date of Attendance (DOFA).</p>
+                        <label class="block text-xs font-bold mb-1">Learner Reference Number (LRN)</label>
+                        <input type="text" id="lrnInput" required placeholder="12-digit LRN" class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
                     </div>
-                    <button onclick="simulateOCRScan()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3 py-2 rounded-xl shadow flex items-center">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Scan DepEd Form (OCR)
-                    </button>
-                </div>
-
-                <form id="enrollment-form" onsubmit="handleEnrollmentSubmit(event)" class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Left Column: Personal Information -->
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Surname</label>
-                                <input type="text" id="en-surname" required placeholder="Dela Cruz" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">First Name</label>
-                                <input type="text" id="en-firstname" required placeholder="Juan" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Middle Name</label>
-                                <input type="text" id="en-middlename" placeholder="Santos" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">LRN (12 Digits)</label>
-                                <input type="text" id="en-lrn" maxlength="12" pattern="\d{12}" required placeholder="108291000123" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Program Level</label>
-                                <select id="en-level" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                                    <option value="BLP">Basic Literacy Program (BLP)</option>
-                                    <option value="A&E Elementary">A&E Elementary Level</option>
-                                    <option value="A&E Junior High" selected>A&E Junior High School Level</option>
-                                    <option value="A&E Senior High">A&E Senior High School Level</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">DOFA (First Attendance)</label>
-                                <input type="date" id="en-dofa" required class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Barangay / Address</label>
-                                <input type="text" id="en-address" placeholder="Brgy. San Roque, Masantol" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Contact Number</label>
-                                <input type="text" id="en-contact" placeholder="09171234567" class="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-deped-blue">
-                            </div>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Full Name (Last, First, Middle)</label>
+                        <input type="text" id="nameInput" required placeholder="Dela Cruz, Juan Jr." class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
                     </div>
-
-                    <!-- Right Column: Formal ID Photo Studio with Attire Overlay & Nametag -->
-                    <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-between">
-                        <span class="text-xs font-extrabold uppercase text-slate-600 dark:text-slate-300 mb-2">Formal ID Photo Studio</span>
-                        
-                        <!-- Canvas / Photo Preview Box -->
-                        <div class="relative w-36 h-48 bg-white dark:bg-slate-900 border-2 border-slate-400 rounded-lg overflow-hidden shadow-inner flex flex-col items-center justify-center text-center">
-                            <div id="photo-placeholder" class="text-slate-400 p-2">
-                                <i class="fa-solid fa-camera text-3xl mb-1"></i>
-                                <p class="text-[10px]">Take or Upload Formal Photo</p>
-                            </div>
-                            <img id="learner-id-preview" class="hidden absolute inset-0 w-full h-full object-cover">
-                            
-                            <!-- Formal Collar Overlay (Virtual Attire) -->
-                            <div id="formal-attire-overlay" class="hidden absolute bottom-6 w-full opacity-90 pointer-events-none">
-                                <svg viewBox="0 0 100 40" class="w-full h-12 text-white fill-current">
-                                    <path d="M 0 40 L 30 10 L 50 25 L 70 10 L 100 40 Z" />
-                                    <path d="M 45 25 L 50 40 L 55 25 Z" fill="#0038A8" />
-                                </svg>
-                            </div>
-
-                            <!-- DepEd Style Surname, First Name Nametag Bar -->
-                            <div class="absolute bottom-0 inset-x-0 bg-white/95 border-t border-slate-300 text-center py-0.5 px-1">
-                                <p id="nametag-text" class="text-[9px] font-black uppercase text-slate-800 tracking-tighter truncate">
-                                    SURNAME, FIRSTNAME M.
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Photo Actions -->
-                        <div class="w-full space-y-2 mt-3">
-                            <label class="w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold text-xs py-2 px-3 rounded-lg cursor-pointer flex items-center justify-center shadow-sm">
-                                <i class="fa-solid fa-upload mr-1.5"></i> Upload Photo
-                                <input type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
-                            </label>
-                            <button type="button" onclick="toggleFormalAttireOverlay()" class="w-full bg-blue-100 dark:bg-blue-900/40 text-deped-blue dark:text-blue-300 font-bold text-[11px] py-1.5 px-2 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center justify-center">
-                                <i class="fa-solid fa-shirt mr-1"></i> Toggle Formal Attire
-                            </button>
-                        </div>
-
-                        <button type="submit" class="w-full mt-3 bg-deped-blue hover:bg-blue-800 text-white font-extrabold text-xs py-2.5 rounded-xl shadow-lg transition flex items-center justify-center">
-                            <i class="fa-solid fa-floppy-disk mr-2"></i> Save Learner Profile
-                        </button>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Birthdate</label>
+                        <input type="date" id="dobInput" required class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Gender</label>
+                        <select id="genderInput" class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold mb-1">Address</label>
+                        <input type="text" id="addressInput" placeholder="Barangay, Municipality, Province" class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">ALS Level Target</label>
+                        <select id="levelInput" class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
+                            <option value="Basic Literacy (BLP)">Basic Literacy Program (BLP)</option>
+                            <option value="Elementary (LE)">Lower Elementary (LE)</option>
+                            <option value="Elementary (AE)">Advanced Elementary (AE)</option>
+                            <option value="Junior High School (JHS)">Junior High School (JHS)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Parent / Guardian Name</label>
+                        <input type="text" id="guardianInput" class="w-full p-2 border rounded bg-slate-50 border-slate-300 dark:bg-zinc-800 dark:border-zinc-700">
+                    </div>
+                    <div class="md:col-span-2 flex justify-end space-x-2 mt-2">
+                        <button type="submit" class="px-6 py-2 bg-blue-900 text-white font-bold text-xs rounded hover:bg-blue-800">Save & Sync Learner Profile</button>
                     </div>
                 </form>
             </div>
+        </section>
 
-            <!-- Enrolled Students Table -->
-            <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                <h4 class="font-bold text-sm text-slate-700 dark:text-slate-300 mb-3 flex items-center">
-                    <i class="fa-solid fa-users-rectangle mr-2 text-deped-blue"></i> Enrolled ALS Roster
-                </h4>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-slate-200/70 dark:bg-slate-800 uppercase font-bold text-slate-600 dark:text-slate-300">
-                                <th class="p-2.5 rounded-l-lg">Photo</th>
-                                <th class="p-2.5">Learner Name</th>
-                                <th class="p-2.5">LRN</th>
-                                <th class="p-2.5">Program Level</th>
-                                <th class="p-2.5">DOFA</th>
-                                <th class="p-2.5 text-right rounded-r-lg">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="roster-table-body" class="divide-y divide-slate-200 dark:divide-slate-800">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
+        <!-- 3. MODULES & MEDIA TAB -->
+        <section id="modulesTab" class="tab-content hidden">
+            <div class="teacher-only bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 dark-card">
+                <h3 class="text-sm font-bold text-slate-800 mb-2 dark:text-white">Upload Learning Strand Material</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <input type="text" id="moduleTitle" placeholder="Module Title (e.g., LS1 Communication)" class="p-2 text-xs border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                    <select id="strandSelect" class="p-2 text-xs border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                        <option value="LS1">LS1: Communication Skills</option>
+                        <option value="LS2">LS2: Scientific & Critical Thinking</option>
+                        <option value="LS3">LS3: Mathematical Skills</option>
+                        <option value="LS4">LS4: Life & Career Skills</option>
+                        <option value="LS5">LS5: Understanding Self & Society</option>
+                        <option value="LS6">LS6: Digital Citizenship</option>
+                    </select>
+                    <input type="file" id="moduleFile" accept=".pdf,video/*,image/*" class="text-xs p-1 border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                    <button onclick="uploadModule()" class="bg-emerald-600 text-white font-bold text-xs py-2 rounded hover:bg-emerald-500">Save to Device Memory</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 dark-card">
+                    <h3 class="text-sm font-bold text-slate-800 mb-3 border-b pb-2 dark:text-white">Uploaded Materials</h3>
+                    <div id="moduleList" class="space-y-2 text-xs text-slate-500">
+                        <p>No uploaded files yet. Switch to Teacher Studio to upload.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 dark-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-white">Worksheet Canvas & Speech Reader</h3>
+                        <button onclick="readCanvasText()" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 font-semibold">🔊 Read Text</button>
+                    </div>
+                    <canvas id="worksheetCanvas" width="500" height="350" class="border border-slate-300 rounded w-full bg-slate-100 dark:bg-zinc-900 cursor-crosshair"></canvas>
+                    <div class="flex justify-between items-center mt-2">
+                        <div class="flex space-x-1">
+                            <button onclick="setCanvasColor('#000000')" class="w-5 h-5 bg-black rounded-full border"></button>
+                            <button onclick="setCanvasColor('#dc2626')" class="w-5 h-5 bg-red-600 rounded-full border"></button>
+                            <button onclick="setCanvasColor('#2563eb')" class="w-5 h-5 bg-blue-600 rounded-full border"></button>
+                        </div>
+                        <button onclick="clearCanvas()" class="text-xs text-red-600 hover:underline">Clear Canvas</button>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= PAGE 3: MODULES, MEDIA & ANNOTATOR ================= -->
-        <section id="tab-modules" class="tab-content hidden space-y-6">
-            <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <div>
-                    <h3 class="text-base font-extrabold text-deped-darkBlue dark:text-blue-400">
-                        <i class="fa-solid fa-folder-open mr-2"></i> ALS Modules & Digital Worksheets
-                    </h3>
-                    <p class="text-xs text-slate-500">Access offline learning sheets, video lessons, and interactive PDF drawing annotator.</p>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <label class="bg-deped-blue hover:bg-blue-800 text-white font-bold text-xs px-3 py-2 rounded-xl cursor-pointer shadow flex items-center">
-                        <i class="fa-solid fa-file-circle-plus mr-1.5"></i> Upload PDF / Video
-                        <input type="file" accept="application/pdf,video/mp4" class="hidden" onchange="handleModuleFileUpload(event)">
-                    </label>
-                </div>
-            </div>
-
-            <!-- Active Worksheets Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Card 1 -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm flex flex-col justify-between">
-                    <div class="p-4 space-y-2">
-                        <span class="bg-blue-100 text-deped-blue text-[10px] font-bold px-2 py-0.5 rounded-full">LS1 - English</span>
-                        <h4 class="font-bold text-sm">Module 1: Paragraph Building & Critical Reading</h4>
-                        <p class="text-xs text-slate-500 line-clamp-2">Learn main ideas, supporting details, and reading comprehension strategies for ALS A&E learners.</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400 font-medium"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> PDF Worksheet</span>
-                        <button onclick="openAnnotator('LS1 Paragraph Building Activity Sheet')" class="bg-deped-yellow hover:bg-yellow-400 text-deped-darkBlue font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition">
-                            <i class="fa-solid fa-pen-ruler mr-1"></i> Open Annotator
-                        </button>
-                    </div>
+        <!-- 4. DEPED FORMS & FLT TAB -->
+        <section id="formsTab" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 dark-card">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white">Auto-Populated DepEd ALS Records</h3>
+                    <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded hover:bg-slate-700">🖨️ Print Document</button>
                 </div>
 
-                <!-- Card 2 -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm flex flex-col justify-between">
-                    <div class="p-4 space-y-2">
-                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">LS3 - Mathematics</span>
-                        <h4 class="font-bold text-sm">Module 2: Practical Business Numeracy</h4>
-                        <p class="text-xs text-slate-500 line-clamp-2">Basic accounting, profit computation, and interest rates for micro-entrepreneurs.</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400 font-medium"><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i> PDF Worksheet</span>
-                        <button onclick="openAnnotator('LS3 Business Numeracy Activity Sheet')" class="bg-deped-yellow hover:bg-yellow-400 text-deped-darkBlue font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition">
-                            <i class="fa-solid fa-pen-ruler mr-1"></i> Open Annotator
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm flex flex-col justify-between">
-                    <div class="p-4 space-y-2">
-                        <span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full">LS6 - Digital Literacy</span>
-                        <h4 class="font-bold text-sm">Module 3: Safe Internet & Mobile App Usage</h4>
-                        <p class="text-xs text-slate-500 line-clamp-2">Navigating online educational tools, spotting fake news, and cybersecurity basics.</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400 font-medium"><i class="fa-solid fa-video text-blue-500 mr-1"></i> Embedded Lesson</span>
-                        <button onclick="alert('Playing embedded video lesson locally...')" class="bg-deped-blue hover:bg-blue-800 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition">
-                            <i class="fa-solid fa-play mr-1"></i> Watch Video
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- IN-APP INTERACTIVE PDF/WORKSHEET ANNOTATOR -->
-            <div id="annotator-container" class="hidden glass-panel p-4 rounded-2xl shadow-lg border border-slate-300 dark:border-slate-700 space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3 border-slate-200 dark:border-slate-700">
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-pen-nib text-deped-blue text-xl"></i>
-                        <div>
-                            <h4 id="annotator-title" class="font-bold text-sm">Worksheet Canvas Annotator</h4>
-                            <p class="text-[10px] text-slate-500">Draw, write text overlays, or sign directly on the worksheet canvas.</p>
-                        </div>
-                    </div>
-
-                    <!-- Drawing Toolbar -->
-                    <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-300 dark:border-slate-700">
-                        <button onclick="setAnnotatorTool('pen')" id="tool-pen" class="p-2 rounded-lg bg-deped-blue text-white text-xs font-bold shadow" title="Pen Tool">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button onclick="setAnnotatorTool('text')" id="tool-text" class="p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold" title="Add Text Overlay">
-                            <i class="fa-solid fa-font"></i>
-                        </button>
-                        <input type="color" id="annotator-color" value="#0038A8" class="w-8 h-8 rounded border border-slate-300 cursor-pointer" title="Pick Brush Color">
-                        <button onclick="clearAnnotatorCanvas()" class="p-2 rounded-lg text-red-600 hover:bg-red-50 text-xs font-bold" title="Clear Drawing">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <button onclick="closeAnnotator()" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 text-xs font-bold">
-                            <i class="fa-solid fa-xmark text-base"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Worksheet Interactive Canvas Container -->
-                <div class="relative bg-white border border-slate-300 rounded-xl overflow-hidden min-h-[400px] flex justify-center items-center">
-                    <!-- Background Template Representation -->
-                    <div class="absolute inset-0 p-8 text-slate-800 pointer-events-none select-none font-serif opacity-30 space-y-4">
-                        <div class="text-center font-bold text-lg uppercase tracking-wide">DepEd ALS Activity Sheet #1</div>
-                        <p>Name: _______________________________ Date: _______________</p>
-                        <p>Instruction: Read the passage below and answer the questions using the drawing pen or text overlay tool.</p>
-                        <p class="italic">"Lifelong learning opens doors to community development and economic resilience."</p>
-                    </div>
-
-                    <!-- Active Drawing Canvas Layer -->
-                    <canvas id="worksheet-canvas" class="relative z-10 w-full h-[450px] cursor-crosshair"></canvas>
-                </div>
-
-                <div class="flex justify-end">
-                    <button onclick="saveAnnotatedWorksheet()" class="bg-green-700 hover:bg-green-800 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow flex items-center">
-                        <i class="fa-solid fa-floppy-disk mr-2"></i> Save Answered Worksheet
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
+                    <button onclick="renderForm('AF1')" class="p-3 text-left border rounded hover:border-blue-500 text-xs dark:border-zinc-700">
+                        <div class="font-bold text-blue-900 dark:text-blue-400">AF-1: ILA</div>
+                        <div class="text-slate-500">Individual Learning Agreement</div>
                     </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= PAGE 4: TERM EXAMS & FLT ASSESSMENT HUB ================= -->
-        <section id="tab-exams" class="tab-content hidden space-y-6">
-            <div class="glass-panel p-4 sm:p-6 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800">
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 border-slate-200 dark:border-slate-700">
-                    <div>
-                        <h3 class="text-lg font-extrabold text-deped-darkBlue dark:text-blue-400">
-                            <i class="fa-solid fa-file-pen mr-2 text-deped-yellow"></i> Term Examinations & FLT Assessment Hub
-                        </h3>
-                        <p class="text-xs text-slate-500">Official DepEd Functional Literacy Tests (FLT), Quarterly Summative Exams, and Portfolio Clearances.</p>
-                    </div>
-                    <span class="bg-red-100 text-deped-red text-xs font-bold px-3 py-1 rounded-full border border-red-200 flex items-center">
-                        <i class="fa-solid fa-shield-halved mr-1.5"></i> Proctored & Anti-Cheat Enabled
-                    </span>
-                </div>
-
-                <!-- Exam Types Selection Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <!-- FLT Slot -->
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                        <div class="flex justify-between items-start">
-                            <span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Diagnostic</span>
-                            <i class="fa-solid fa-clipboard-check text-2xl text-purple-600"></i>
-                        </div>
-                        <h4 class="font-extrabold text-base">FLT Pre-Test / Post-Test</h4>
-                        <p class="text-xs text-slate-500">Baseline literacy & numeracy diagnostic test across all 6 Learning Strands prior to module assignment.</p>
-                        <button onclick="startExam('Functional Literacy Diagnostic Test (FLT)')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs py-2 rounded-xl shadow transition">
-                            Launch FLT Diagnostic
-                        </button>
-                    </div>
-
-                    <!-- Quarterly Exam Slot (PIN Protected) -->
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3 relative">
-                        <div class="flex justify-between items-start">
-                            <span class="bg-red-100 text-deped-red text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Major Exam</span>
-                            <i class="fa-solid fa-lock text-2xl text-deped-red"></i>
-                        </div>
-                        <h4 class="font-extrabold text-base">Quarter 1 Summative Exam</h4>
-                        <p class="text-xs text-slate-500">Proctored term assessment with single-attempt locking, countdown timer, and automated scoring.</p>
-                        <button onclick="promptExamPin('Quarter 1 Summative Assessment')" class="w-full bg-deped-red hover:bg-red-800 text-white font-bold text-xs py-2 rounded-xl shadow transition flex items-center justify-center">
-                            <i class="fa-solid fa-key mr-1.5"></i> Unlock with Admin PIN
-                        </button>
-                    </div>
-
-                    <!-- Presentation Portfolio Slot -->
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                        <div class="flex justify-between items-start">
-                            <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Graduation</span>
-                            <i class="fa-solid fa-award text-2xl text-green-600"></i>
-                        </div>
-                        <h4 class="font-extrabold text-base">Presentation Portfolio</h4>
-                        <p class="text-xs text-slate-500">Verification checklist of required work samples, self-assessment sheets, and module post-tests.</p>
-                        <button onclick="alert('Opening Presentation Portfolio verification checklist...')" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold text-xs py-2 rounded-xl shadow transition">
-                            View Portfolio Checklist
-                        </button>
-                    </div>
-                </div>
-
-                <!-- ZERO-SCROLL FIT-TO-PAGE PROCTORED QUIZ ENGINE CONTAINER -->
-                <div id="active-quiz-container" class="hidden mt-6 bg-white dark:bg-slate-800 rounded-2xl border-2 border-deped-blue shadow-2xl p-4 sm:p-6 proctor-overlay">
-                    <div class="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-700">
-                        <div>
-                            <span id="quiz-title-badge" class="bg-deped-blue text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">Proctored Assessment</span>
-                            <h3 id="quiz-active-title" class="text-base sm:text-lg font-extrabold mt-1">Quarter 1 Summative Examination</h3>
-                        </div>
-                        <!-- Timed Countdown Display -->
-                        <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 text-deped-red font-mono font-bold text-sm px-3 py-1.5 rounded-xl flex items-center">
-                            <i class="fa-solid fa-stopwatch mr-1.5 animate-spin"></i> <span id="quiz-timer">30:00</span>
-                        </div>
-                    </div>
-
-                    <!-- Fit-To-Page Mobile Friendly Layout -->
-                    <div class="mt-4 space-y-4">
-                        <div class="flex justify-between text-xs text-slate-500 font-bold">
-                            <span>Question <span id="quiz-current-num">1</span> of 5</span>
-                            <span id="tab-switch-warning" class="text-red-600 hidden"><i class="fa-solid fa-triangle-exclamation"></i> Tab Switch Detected!</span>
-                        </div>
-
-                        <!-- Question Prompt Box -->
-                        <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <p id="quiz-question-text" class="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100">
-                                Which learning strand in the DepEd ALS program focuses on developing mathematical problem-solving skills and everyday financial literacy?
-                            </p>
-                        </div>
-
-                        <!-- Multiple Choice Options -->
-                        <div id="quiz-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <button onclick="selectQuizOption(this)" class="quiz-opt-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 text-left text-xs sm:text-sm font-medium hover:bg-blue-50 dark:hover:bg-slate-700 transition">
-                                A. Learning Strand 1 (Communication Skills)
-                            </button>
-                            <button onclick="selectQuizOption(this)" class="quiz-opt-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 text-left text-xs sm:text-sm font-medium hover:bg-blue-50 dark:hover:bg-slate-700 transition">
-                                B. Learning Strand 3 (Mathematical Skills)
-                            </button>
-                            <button onclick="selectQuizOption(this)" class="quiz-opt-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 text-left text-xs sm:text-sm font-medium hover:bg-blue-50 dark:hover:bg-slate-700 transition">
-                                C. Learning Strand 6 (Digital Literacy)
-                            </button>
-                            <button onclick="selectQuizOption(this)" class="quiz-opt-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 text-left text-xs sm:text-sm font-medium hover:bg-blue-50 dark:hover:bg-slate-700 transition">
-                                D. Learning Strand 4 (Life & Career Skills)
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 flex justify-between items-center border-t pt-3 border-slate-200 dark:border-slate-700">
-                        <button onclick="exitExam()" class="text-xs text-slate-500 font-bold hover:underline">Cancel & Exit</button>
-                        <button onclick="nextQuizQuestion()" class="bg-deped-blue hover:bg-blue-800 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl shadow transition">
-                            Next Question <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= PAGE 5: DEPED OFFICIAL FORMS (AF1-AF5) ================= -->
-        <section id="tab-forms" class="tab-content hidden space-y-6">
-            <div class="glass-panel p-4 sm:p-6 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800">
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 border-slate-200 dark:border-slate-700">
-                    <div>
-                        <h3 class="text-lg font-extrabold text-deped-darkBlue dark:text-blue-400">
-                            <i class="fa-solid fa-file-invoice mr-2"></i> DepEd ALS Official Administrative Forms Engine
-                        </h3>
-                        <p class="text-xs text-slate-500">Automated generation and print previews for official DepEd ALS Forms AF-1 to AF-5.</p>
-                    </div>
-                    <button onclick="window.print()" class="bg-deped-blue hover:bg-blue-800 text-white font-bold text-xs px-4 py-2 rounded-xl shadow flex items-center">
-                        <i class="fa-solid fa-print mr-1.5"></i> Print Official Form
+                    <button onclick="renderForm('AF2')" class="p-3 text-left border rounded hover:border-blue-500 text-xs dark:border-zinc-700">
+                        <div class="font-bold text-blue-900 dark:text-blue-400">AF-2: Progress Record</div>
+                        <div class="text-slate-500">Record of Module Use</div>
+                    </button>
+                    <button onclick="renderForm('RPL1')" class="p-3 text-left border rounded hover:border-blue-500 text-xs dark:border-zinc-700">
+                        <div class="font-bold text-blue-900 dark:text-blue-400">RPL Form 1</div>
+                        <div class="text-slate-500">Life Experience Records</div>
+                    </button>
+                    <button onclick="renderForm('FLT')" class="p-3 text-left border rounded hover:border-blue-500 text-xs dark:border-zinc-700">
+                        <div class="font-bold text-amber-600">FLT Diagnostic</div>
+                        <div class="text-slate-500">Functional Literacy Assessment</div>
                     </button>
                 </div>
 
-                <!-- Form Selector Tabs -->
-                <div class="flex space-x-2 overflow-x-auto my-4 text-xs font-bold">
-                    <button onclick="renderDepEdForm('AF1')" class="form-select-btn bg-deped-blue text-white px-3 py-2 rounded-lg">AF-1 (Individual Profile)</button>
-                    <button onclick="renderDepEdForm('AF2')" class="form-select-btn bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-2 rounded-lg">AF-2 (Enrollment List)</button>
-                    <button onclick="renderDepEdForm('AF3')" class="form-select-btn bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-2 rounded-lg">AF-3 (Masterlist of Learners)</button>
-                    <button onclick="renderDepEdForm('AF4')" class="form-select-btn bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-2 rounded-lg">AF-4 (Learner Progress)</button>
-                    <button onclick="renderDepEdForm('AF5')" class="form-select-btn bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-2 rounded-lg">AF-5 (Evaluation & Clearance)</button>
-                </div>
-
-                <!-- Printable Form Canvas Box -->
-                <div id="printable-form-canvas" class="bg-white text-slate-900 p-6 rounded-xl border border-slate-300 shadow-inner font-serif text-xs space-y-4 max-w-4xl mx-auto min-h-[500px]">
-                    <!-- Form Header Header with Logos -->
-                    <div class="text-center space-y-1 border-b-2 border-slate-900 pb-3">
-                        <div class="flex justify-between items-center px-4">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Department_of_Education_%28DepEd%29.svg" class="h-12 w-auto">
-                            <div class="text-center font-bold">
-                                <p class="text-[10px] uppercase">Republic of the Philippines</p>
-                                <p class="text-xs font-black uppercase text-deped-blue">Department of Education</p>
-                                <p class="text-[10px]">Alternative Learning System (ALS)</p>
-                            </div>
-                            <div class="w-12 h-12 bg-deped-yellow text-deped-darkBlue font-black flex items-center justify-center rounded-full text-xs">ALS</div>
-                        </div>
-                        <h3 id="form-display-title" class="font-extrabold text-sm uppercase mt-2">ALS FORM 1: INDIVIDUAL LEARNER'S PROFILE</h3>
-                    </div>
-
-                    <!-- Dynamic Generated Form Content Body -->
-                    <div id="form-body-content" class="space-y-3">
-                        <!-- Rendered dynamically -->
-                    </div>
+                <div id="formPrintArea" class="border border-slate-300 p-6 rounded bg-white text-slate-900 text-xs min-h-[400px]">
+                    <p class="text-slate-400 text-center py-12">Select an active learner above and click any form to display auto-filled fields.</p>
                 </div>
             </div>
         </section>
+
+        <!-- 5. CLASSROOM CUSTOMIZATION TAB -->
+        <section id="settingsTab" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 dark-card max-w-2xl mx-auto">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 dark:text-white">Classroom Customization</h3>
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Community Learning Center (CLC) Name</label>
+                        <input type="text" id="clcNameInput" value="Masantol Elementary School Learning Center" class="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Header Symbol / Icon Emoji</label>
+                        <input type="text" id="clcIconInput" value="🏫" class="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700">
+                    </div>
+                    <button onclick="saveBranding()" class="px-6 py-2 bg-blue-900 text-white font-bold text-xs rounded hover:bg-blue-800">Apply Settings</button>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- TEACHER CUSTOMIZATION STUDIO MODAL -->
-    <div id="teacher-studio-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-            <div class="bg-deped-darkBlue text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-sm flex items-center">
-                    <i class="fa-solid fa-sliders text-deped-yellow mr-2"></i> Teacher Customization & Branding Studio
-                </h3>
-                <button onclick="toggleTeacherStudioModal()" class="text-slate-300 hover:text-white text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="p-4 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto text-xs">
-                <!-- Branding Text Options -->
-                <div class="space-y-2">
-                    <label class="font-bold uppercase text-slate-600 dark:text-slate-300">CLC / School Name Header</label>
-                    <input type="text" id="studio-school-input" value="SAN ROQUE COMMUNITY LEARNING CENTER" class="w-full p-2.5 rounded-lg border border-slate-300 dark:bg-slate-700 dark:border-slate-600 font-bold">
-                </div>
-
-                <!-- Font Engine Selector -->
-                <div class="space-y-2">
-                    <label class="font-bold uppercase text-slate-600 dark:text-slate-300">Accessibility Font Engine</label>
-                    <select id="studio-font-select" onchange="applyFontEngine(this.value)" class="w-full p-2.5 rounded-lg border border-slate-300 dark:bg-slate-700">
-                        <option value="font-sans">Standard Sans-Serif (Inter)</option>
-                        <option value="font-serif">Academic Serif (Lora)</option>
-                        <option value="font-dyslexic">Dyslexia-Accessible Font (Comic Neue)</option>
-                        <option value="font-mono">Monospace High Contrast (Space Mono)</option>
-                    </select>
-                </div>
-
-                <!-- Text Scaling Slider -->
-                <div class="space-y-2">
-                    <div class="flex justify-between font-bold text-slate-600 dark:text-slate-300">
-                        <span>UI Text Scaling</span>
-                        <span id="scale-val-label">100%</span>
-                    </div>
-                    <input type="range" min="90" max="120" value="100" oninput="adjustTextScale(this.value)" class="w-full">
-                </div>
-
-                <!-- 5-Slot Logo Customizer -->
-                <div class="space-y-2 border-t pt-3">
-                    <label class="font-bold uppercase text-slate-600 dark:text-slate-300">Custom Division / CLC Logo Upload</label>
-                    <input type="file" accept="image/*" onchange="uploadCustomLogo(event, 'logo-slot-5')" class="w-full text-slate-500">
-                </div>
-            </div>
-
-            <div class="bg-slate-100 dark:bg-slate-900 p-3 flex justify-end">
-                <button onclick="saveTeacherStudioSettings()" class="bg-deped-blue text-white font-bold px-4 py-2 rounded-xl text-xs">
-                    Apply & Save Settings
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT APP ENGINE -->
+    <!-- Master Application Controller Script -->
     <script>
-        // APP STATE & DATA STORES
-        let enrolledLearners = [
-            { id: 1, surname: 'DELA CRUZ', firstname: 'JUAN', middlename: 'SANTOS', lrn: '108291000123', level: 'A&E Junior High', dofa: '2026-01-15', address: 'Brgy. San Roque', contact: '09171234567', photo: null },
-            { id: 2, surname: 'SANTIAGO', firstname: 'MARIA', middlename: 'LUNA', lrn: '108291000456', level: 'A&E Senior High', dofa: '2026-01-18', address: 'Brgy. Sto. Nino', contact: '09189876543', photo: null }
-        ];
+        let appData = {
+            role: 'teacher',
+            clcName: 'Masantol Elementary School Learning Center',
+            clcIcon: '🏫',
+            activeLearnerId: null,
+            learners: [],
+            modules: []
+        };
 
-        let deferredPWAInstallPrompt = null;
-        let isFormalAttireEnabled = true;
-
-        // INITIALIZATION ON WINDOW LOAD
-        window.addEventListener('DOMContentLoaded', () => {
-            renderLearnerRoster();
-            setupCanvasAnnotator();
-            renderDepEdForm('AF1');
-            
-            // Register PWA Service Worker Hook
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    deferredPWAInstallPrompt = e;
-                    document.getElementById('pwa-install-btn').classList.remove('hidden');
-                });
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            updateUI();
+            setupCanvas();
         });
 
-        // TAB NAVIGATION ENGINE
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-tab').forEach(el => {
-                el.classList.remove('bg-blue-900/80', 'border-b-2', 'border-deped-yellow', 'text-white');
-                el.classList.add('text-blue-200');
-            });
+            document.getElementById(tabId).classList.remove('hidden');
+        }
 
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeNav) {
-                activeNav.classList.add('bg-blue-900/80', 'border-b-2', 'border-deped-yellow', 'text-white');
-                activeNav.classList.remove('text-blue-200');
+        function toggleRole() {
+            if (appData.role === 'teacher') {
+                appData.role = 'learner';
+            } else {
+                const pin = prompt("Enter Teacher PIN:", "8921");
+                if (pin === "8921") appData.role = 'teacher';
+                else { alert("Incorrect PIN!"); return; }
             }
+            updateUI();
         }
 
-        // PWA INSTALL TRIGGER
-        function triggerPWAInstall() {
-            if (deferredPWAInstallPrompt) {
-                deferredPWAInstallPrompt.prompt();
-                deferredPWAInstallPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted PWA installation');
-                    }
-                    deferredPWAInstallPrompt = null;
-                    document.getElementById('pwa-install-btn').classList.add('hidden');
-                });
+        function updateUI() {
+            const roleBtn = document.getElementById('roleToggleButton');
+            const teacherElements = document.querySelectorAll('.teacher-only');
+            
+            if (appData.role === 'teacher') {
+                roleBtn.innerText = "👨‍🏫 Teacher Studio";
+                roleBtn.className = "px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded transition shadow";
+                teacherElements.forEach(el => el.style.display = 'block');
+            } else {
+                roleBtn.innerText = "👨‍🎓 Learner Mode";
+                roleBtn.className = "px-3 py-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white rounded transition shadow";
+                teacherElements.forEach(el => el.style.display = 'none');
             }
+
+            document.getElementById('clcNameDisplay').innerText = appData.clcName;
+            document.getElementById('clcLogoIcon').innerText = appData.clcIcon;
+            document.getElementById('statLearners').innerText = appData.learners.length;
+            document.getElementById('statModules').innerText = appData.modules.length;
+
+            updateLearnerDropdown();
         }
 
-        // ROSTER & ENROLLMENT ENGINE
-        function renderLearnerRoster() {
-            const tbody = document.getElementById('roster-table-body');
-            tbody.innerHTML = '';
-
-            enrolledLearners.forEach(l => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-100 dark:hover:bg-slate-800/50 transition';
-                tr.innerHTML = `
-                    <td class="p-2.5">
-                        <div class="w-8 h-8 rounded-full bg-deped-blue text-white flex items-center justify-center font-bold text-xs overflow-hidden">
-                            ${l.photo ? `<img src="${l.photo}" class="w-full h-full object-cover">` : l.firstname[0]}
-                        </div>
-                    </td>
-                    <td class="p-2.5 font-bold">${l.surname}, ${l.firstname} ${l.middlename ? l.middlename[0] + '.' : ''}</td>
-                    <td class="p-2.5 font-mono text-slate-500">${l.lrn}</td>
-                    <td class="p-2.5"><span class="bg-blue-100 text-deped-blue text-[10px] font-bold px-2 py-0.5 rounded-full">${l.level}</span></td>
-                    <td class="p-2.5">${l.dofa}</td>
-                    <td class="p-2.5 text-right">
-                        <button onclick="deleteLearner(${l.id})" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('stat-enrolled').innerText = enrolledLearners.length;
+        function saveToStorage() {
+            try { localStorage.setItem('eduPulse_data', JSON.stringify(appData)); }
+            catch(e) { console.warn("Storage restricted."); }
         }
 
-        function handleEnrollmentSubmit(e) {
+        function loadFromStorage() {
+            try {
+                const stored = localStorage.getItem('eduPulse_data');
+                if (stored) appData = Object.assign(appData, JSON.parse(stored));
+            } catch(e) { console.warn("Storage restricted."); }
+        }
+
+        function saveLearnerProfile(e) {
             e.preventDefault();
-            const surname = document.getElementById('en-surname').value.toUpperCase();
-            const firstname = document.getElementById('en-firstname').value.toUpperCase();
-            const middlename = document.getElementById('en-middlename').value.toUpperCase();
-            const lrn = document.getElementById('en-lrn').value;
-            const level = document.getElementById('en-level').value;
-            const dofa = document.getElementById('en-dofa').value;
-            const photoSrc = document.getElementById('learner-id-preview').src;
-
-            const newLearner = {
-                id: Date.now(),
-                surname, firstname, middlename, lrn, level, dofa,
-                photo: photoSrc !== '' ? photoSrc : null
+            const learner = {
+                id: Date.now().toString(),
+                lrn: document.getElementById('lrnInput').value,
+                name: document.getElementById('nameInput').value,
+                dob: document.getElementById('dobInput').value,
+                gender: document.getElementById('genderInput').value,
+                address: document.getElementById('addressInput').value,
+                level: document.getElementById('levelInput').value,
+                guardian: document.getElementById('guardianInput').value,
+                fltScore: 'Not Taken'
             };
 
-            enrolledLearners.push(newLearner);
-            renderLearnerRoster();
-            alert(`Learner ${firstname} ${surname} officially enrolled with recorded DOFA: ${dofa}`);
-            document.getElementById('enrollment-form').reset();
+            appData.learners.push(learner);
+            appData.activeLearnerId = learner.id;
+            saveToStorage();
+            updateUI();
+            alert("Learner Profile Registered Successfully!");
+            document.getElementById('enrollmentForm').reset();
+            switchTab('dashboardTab');
         }
 
-        // SIMULATE OCR FORM SCAN
-        function simulateOCRScan() {
-            alert('Scanning DepEd Learner Registration Form via OCR...');
-            document.getElementById('en-surname').value = "REYES";
-            document.getElementById('en-firstname').value = "CARLO";
-            document.getElementById('en-middlename').value = "MENDOZA";
-            document.getElementById('en-lrn').value = "108291000888";
-            document.getElementById('en-dofa').value = "2026-02-01";
-            updateNametag("REYES, CARLO M.");
+        function updateLearnerDropdown() {
+            const select = document.getElementById('activeLearnerSelect');
+            select.innerHTML = '<option value="">-- Select Active Learner --</option>';
+            appData.learners.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.id;
+                opt.innerText = `${l.name} (${l.lrn})`;
+                if (l.id === appData.activeLearnerId) opt.selected = true;
+                select.appendChild(opt);
+            });
+            updateActiveLearnerBanner();
         }
 
-        // PHOTO FORMAL ATTIRE & NAMETAG CONTROLS
-        function handlePhotoUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const img = document.getElementById('learner-id-preview');
-                    img.src = evt.target.result;
-                    img.classList.remove('hidden');
-                    document.getElementById('photo-placeholder').classList.add('hidden');
-                    document.getElementById('formal-attire-overlay').classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
+        function setActiveLearner(id) {
+            appData.activeLearnerId = id;
+            saveToStorage();
+            updateActiveLearnerBanner();
+        }
+
+        function updateActiveLearnerBanner() {
+            const active = appData.learners.find(l => l.id === appData.activeLearnerId);
+            const banner = document.getElementById('activeLearnerDetails');
+            if (active) {
+                banner.innerText = `Level: ${active.level} | DOB: ${active.dob} | Addr: ${active.address}`;
+            } else {
+                banner.innerText = "Select or enroll a learner to auto-fill records.";
             }
         }
 
-        function toggleFormalAttireOverlay() {
-            const overlay = document.getElementById('formal-attire-overlay');
-            overlay.classList.toggle('hidden');
-        }
-
-        function updateNametag(text) {
-            document.getElementById('nametag-text').innerText = text;
-        }
-
-        // INTERACTIVE CANVAS ANNOTATOR
-        let canvas, ctx;
-        let isDrawing = false;
-        let currentTool = 'pen';
-
-        function setupCanvasAnnotator() {
-            canvas = document.getElementById('worksheet-canvas');
-            if (!canvas) return;
-            ctx = canvas.getContext('2d');
-            
-            // Set internal drawing dimensions
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            
-            // Touch Support
-            canvas.addEventListener('touchstart', (e) => { startDrawing(e.touches[0]); });
-            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
-            canvas.addEventListener('touchend', stopDrawing);
-        }
-
-        function openAnnotator(title) {
-            document.getElementById('annotator-container').classList.remove('hidden');
-            document.getElementById('annotator-title').innerText = title;
-            setupCanvasAnnotator();
-        }
-
-        function closeAnnotator() {
-            document.getElementById('annotator-container').classList.add('hidden');
-        }
-
-        function setAnnotatorTool(tool) {
-            currentTool = tool;
-            document.getElementById('tool-pen').className = tool === 'pen' ? 'p-2 rounded-lg bg-deped-blue text-white text-xs font-bold shadow' : 'p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 text-xs font-bold';
-            document.getElementById('tool-text').className = tool === 'text' ? 'p-2 rounded-lg bg-deped-blue text-white text-xs font-bold shadow' : 'p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 text-xs font-bold';
-        }
-
-        function startDrawing(e) {
-            if (currentTool === 'text') {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const text = prompt("Enter text overlay:");
-                if (text) {
-                    ctx.font = "16px Inter, sans-serif";
-                    ctx.fillStyle = document.getElementById('annotator-color').value;
-                    ctx.fillText(text, x, y);
-                }
+        // CSV Export Engine for Excel
+        function exportLearnersToCSV() {
+            if (!appData.learners || appData.learners.length === 0) {
+                alert("No learner data available to export.");
                 return;
             }
-            isDrawing = true;
-            ctx.beginPath();
-            const rect = canvas.getBoundingClientRect();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+
+            const headers = ["LRN", "Full Name", "Level", "Gender", "Birthdate", "Address", "Parent/Guardian", "FLT Diagnostic Status"];
+            const rows = appData.learners.map(l => [
+                `"${l.lrn}"`,
+                `"${l.name}"`,
+                `"${l.level}"`,
+                `"${l.gender}"`,
+                `"${l.dob}"`,
+                `"${l.address.replace(/"/g, '""')}"`,
+                `"${l.guardian}"`,
+                `"${l.fltScore || 'Pending'}"`
+            ]);
+
+            const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+            const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `DepEd_ALS_Masterlist_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        function draw(e) {
-            if (!isDrawing || currentTool !== 'pen') return;
-            const rect = canvas.getBoundingClientRect();
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            ctx.strokeStyle = document.getElementById('annotator-color').value;
-            ctx.lineWidth = 2.5;
-            ctx.lineCap = 'round';
-            ctx.stroke();
+        // Offline QR System
+        function generateLearnerQR() {
+            const active = appData.learners.find(l => l.id === appData.activeLearnerId);
+            const container = document.getElementById('qrcodeDisplay');
+            container.innerHTML = "";
+
+            if (!active) { alert("Please select an Active Learner profile first."); return; }
+
+            const payload = { lrn: active.lrn, name: active.name, flt: active.fltScore || "Passed" };
+            new QRCode(container, { text: JSON.stringify(payload), width: 150, height: 150 });
         }
 
-        function stopDrawing() {
-            isDrawing = false;
+        let html5QrcodeScanner;
+        function startQRScanner() {
+            document.getElementById('scanResult').innerText = "Initializing camera...";
+            html5QrcodeScanner = new Html5QrcodeScanner("qrReader", { fps: 10, qrbox: { width: 150, height: 150 } });
+            html5QrcodeScanner.render((decodedText) => {
+                try {
+                    const data = JSON.parse(decodedText);
+                    let learner = appData.learners.find(l => l.lrn === data.lrn);
+                    if (learner) {
+                        learner.fltScore = data.flt;
+                        saveToStorage();
+                        updateUI();
+                        document.getElementById('scanResult').innerText = `✅ Synced records for ${data.name}!`;
+                        html5QrcodeScanner.clear();
+                    } else {
+                        document.getElementById('scanResult').innerText = `⚠️ Learner LRN (${data.lrn}) not found.`;
+                    }
+                } catch(e) { document.getElementById('scanResult').innerText = "⚠️ Invalid QR Payload."; }
+            }, (err) => {});
         }
 
-        function clearAnnotatorCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        // DepEd Auto-Form Renderer
+        function renderForm(type) {
+            const active = appData.learners.find(l => l.id === appData.activeLearnerId);
+            const area = document.getElementById('formPrintArea');
 
-        function saveAnnotatedWorksheet() {
-            alert('Worksheet drawings and text overlays saved to local learner file!');
-            closeAnnotator();
-        }
-
-        // TERM EXAM & ANTI-CHEATING QUIZ ENGINE
-        let quizTimerInterval;
-
-        function promptExamPin(examName) {
-            const pin = prompt(`Enter Master Admin PIN to unlock ${examName}:`);
-            if (pin === "8921" || pin === "1234") {
-                startExam(examName);
-            } else {
-                alert("Incorrect Admin PIN. Exam remains locked.");
+            if (!active) {
+                area.innerHTML = `<p class="text-red-500 font-bold text-center py-8">Select an Active Learner above to populate forms.</p>`;
+                return;
             }
-        }
 
-        function startExam(title) {
-            document.getElementById('active-quiz-container').classList.remove('hidden');
-            document.getElementById('quiz-active-title').innerText = title;
-            
-            // Start 30 Minute Countdown
-            let duration = 30 * 60;
-            const display = document.getElementById('quiz-timer');
-            clearInterval(quizTimerInterval);
-            
-            quizTimerInterval = setInterval(() => {
-                let minutes = parseInt(duration / 60, 10);
-                let seconds = parseInt(duration % 60, 10);
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                display.textContent = minutes + ":" + seconds;
-                if (--duration < 0) {
-                    clearInterval(quizTimerInterval);
-                    alert("Time expired! Automatically submitting exam.");
-                    exitExam();
-                }
-            }, 1000);
-
-            // Tab switch detection (Proctoring)
-            window.onblur = () => {
-                document.getElementById('tab-switch-warning').classList.remove('hidden');
-            };
-        }
-
-        function selectQuizOption(btn) {
-            document.querySelectorAll('.quiz-opt-btn').forEach(b => {
-                b.classList.remove('bg-deped-blue', 'text-white');
-            });
-            btn.classList.add('bg-deped-blue', 'text-white');
-        }
-
-        function nextQuizQuestion() {
-            alert('Progress saved. Loading next question...');
-        }
-
-        function exitExam() {
-            clearInterval(quizTimerInterval);
-            document.getElementById('active-quiz-container').classList.add('hidden');
-            window.onblur = null;
-        }
-
-        // DEPED OFFICIAL FORMS GENERATOR (AF-1 TO AF-5)
-        function renderDepEdForm(formType) {
-            const titleEl = document.getElementById('form-display-title');
-            const bodyEl = document.getElementById('form-body-content');
-
-            if (formType === 'AF1') {
-                titleEl.innerText = "ALS FORM 1: INDIVIDUAL LEARNER'S BASIC PROFILE";
-                bodyEl.innerHTML = `
-                    <div class="grid grid-cols-2 gap-4 border p-3">
-                        <div><strong>Learner Name:</strong> DELA CRUZ, JUAN S.</div>
-                        <div><strong>LRN:</strong> 108291000123</div>
-                        <div><strong>Program Level:</strong> A&E Junior High School</div>
-                        <div><strong>First Attendance (DOFA):</strong> January 15, 2026</div>
+            if (type === 'AF1') {
+                area.innerHTML = `
+                    <div class="border-b-2 border-black pb-2 mb-4 text-center">
+                        <h2 class="font-bold text-sm uppercase">Alternative Learning System (ALS)</h2>
+                        <h3 class="font-bold text-xs uppercase">AF-1: Individual Learning Agreement (ILA)</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs mb-4">
+                        <div><strong>Learner Name:</strong> ${active.name}</div>
+                        <div><strong>LRN:</strong> ${active.lrn}</div>
+                        <div><strong>CLC Name:</strong> ${appData.clcName}</div>
+                        <div><strong>Level:</strong> ${active.level}</div>
+                    </div>
+                    <p>I, <strong>${active.name}</strong>, commit to complete assigned modules under ${appData.clcName}.</p>
+                `;
+            } else if (type === 'RPL1') {
+                area.innerHTML = `
+                    <div class="border-b-2 border-black pb-2 mb-4 text-center">
+                        <h2 class="font-bold text-sm uppercase">ALS RPL Form 1</h2>
+                        <h3 class="font-bold text-xs uppercase">Documentation of Life Experiences</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><strong>Learner Name:</strong> ${active.name}</div>
+                        <div><strong>Address:</strong> ${active.address}</div>
+                        <div><strong>Guardian:</strong> ${active.guardian}</div>
+                        <div><strong>DOB:</strong> ${active.dob}</div>
                     </div>
                 `;
-            } else if (formType === 'AF2') {
-                titleEl.innerText = "ALS FORM 2: ENROLLMENT REGISTRY & ATTENDANCE";
-                bodyEl.innerHTML = `<p class="italic text-slate-500">Generating AF-2 official enrollment table with registered DOFA timestamps...</p>`;
-            } else {
-                titleEl.innerText = `DEPED OFFICIAL ALS FORM (${formType})`;
-                bodyEl.innerHTML = `<p class="italic text-slate-500">Official DepEd compliance document layout prepared for printing...</p>`;
             }
         }
 
-        // TEACHER STUDIO & ACCESSIBILITY CONTROLS
-        function toggleTeacherStudioModal() {
-            document.getElementById('teacher-studio-modal').classList.toggle('hidden');
+        function saveBranding() {
+            appData.clcName = document.getElementById('clcNameInput').value;
+            appData.clcIcon = document.getElementById('clcIconInput').value;
+            saveToStorage();
+            updateUI();
+            alert("Customization settings saved!");
         }
 
-        function applyFontEngine(fontClass) {
-            document.body.classList.remove('font-sans', 'font-serif', 'font-dyslexic', 'font-mono');
-            document.body.classList.add(fontClass);
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+
+        function uploadModule() {
+            const title = document.getElementById('moduleTitle').value;
+            const strand = document.getElementById('strandSelect').value;
+            const fileInput = document.getElementById('moduleFile');
+
+            if (!title || !fileInput.files[0]) { alert("Please enter a title and select a file."); return; }
+
+            appData.modules.push({ title, strand, fileName: fileInput.files[0].name });
+            saveToStorage();
+            updateUI();
+            document.getElementById('moduleList').innerHTML += `<div class="p-2 border rounded flex justify-between bg-slate-50 dark:bg-zinc-800">
+                <span><strong>[${strand}]</strong> ${title}</span>
+                <span class="text-blue-600 font-bold cursor-pointer">Open</span>
+            </div>`;
         }
 
-        function adjustTextScale(val) {
-            document.getElementById('scale-val-label').innerText = val + '%';
-            document.body.style.fontSize = (val / 100) + 'rem';
+        let canvas, ctx, drawing = false;
+        function setupCanvas() {
+            canvas = document.getElementById('worksheetCanvas');
+            ctx = canvas.getContext('2d');
+            ctx.lineWidth = 2;
+            canvas.addEventListener('mousedown', () => drawing = true);
+            canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            });
         }
 
-        function saveTeacherStudioSettings() {
-            const schoolName = document.getElementById('studio-school-input').value;
-            document.getElementById('header-school-name').innerText = schoolName;
-            toggleTeacherStudioModal();
-        }
+        function setCanvasColor(color) { ctx.strokeStyle = color; }
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        function deleteLearner(id) {
-            if (confirm("Delete learner record?")) {
-                enrolledLearners = enrolledLearners.filter(l => l.id !== id);
-                renderLearnerRoster();
-            }
+        function readCanvasText() {
+            const active = appData.learners.find(l => l.id === appData.activeLearnerId);
+            const text = active ? `Reading module for ${active.name}. Follow along on your worksheet.` : "Please select an active learner.";
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
         }
     </script>
 </body>
